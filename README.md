@@ -1,4 +1,10 @@
 racer-examples
 ==============
 
-Example apps for Racer
+## Usage
+
+```sh
+$ npm install
+$ cd pad		# or todos
+$ node server.js
+```
