@@ -5,6 +5,15 @@ racer-examples
 
 ```sh
 $ npm install
-$ cd pad		# or todos
+$ cd pad
 $ node server.js
+```
+
+and
+
+```sh
+$ npm install
+$ npm install -g coffee-script
+$ cd todos
+$ coffee server.coffee
 ```
