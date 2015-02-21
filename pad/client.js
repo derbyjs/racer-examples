@@ -1,8 +1,9 @@
 var data = JSON.parse(document.scripts[0].getAttribute('data-bundle'));
-var model = require('racer').createModel(data);
+var MODEL = require('racer').createModel(data);
+window.MODEL = MODEL
 
 // model.at() scopes all model operations underneath a particular path
-model = model.at('_page.room');
+model = MODEL.at('_page.room');
 
 var pad = document.getElementById('pad');
 

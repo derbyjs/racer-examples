@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Racer pad - {{room}}</title>
+<style>
+#pad-container {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
+}
+
+#editor {
+  width: 100%;
+  height: 300px;
+}
+body {
+  background: #ddd;
+}
+</style>
+
+<div id="instructions">
+  Play around with JSON data synchronization! Try openning your console and typing
+  <pre class="code">
+    MODEL.get();
+    MODEL.get("_page.room");
+    MODEL.set("_page.room.x", 99);
+  </pre>
+</div>
+<div id="pad-container">
+  <textarea id="editor">{{text}}</textarea>
+  <pre id="json">{{text}}</pre>
+</div>
+
+
+<script async src="/script.js" data-bundle='{{{bundle}}}'></script>
