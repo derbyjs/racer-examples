@@ -10,7 +10,7 @@
     "coffeeify": "~0.6.0",
     "express": "~3.4.8",
     "livedb-mongo": "~0.3.0",
-    "racer": "^0.6.0-alpha26",
+    "racer": "^0.6.0-alpha27",
     "racer-browserchannel": "~0.1.1",
     "racer-bundle": "~0.1.1",
     "redis": "~0.10.1",
