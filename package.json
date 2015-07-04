@@ -9,7 +9,7 @@
   "dependencies": {
     "coffeeify": "~0.6.0",
     "express": "~3.4.8",
-    "livedb-mongo": "~0.3.0",
+    "livedb-mongo": "~0.4.0",
     "racer": "^0.6.0-alpha32",
     "racer-browserchannel": "^0.3.0",
     "racer-bundle": "~0.1.1",
