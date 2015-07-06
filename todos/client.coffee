@@ -56,12 +56,13 @@ $ ->
     newTodo.val ''
     # Insert the new todo before the first completed item
     items = listModel.get()
-    for todo, i in items
-      break if todo?.completed
-    listModel.insert i,
-      id: model.id()
+    if items
+      for todo, i in items
+        break if todo?.completed
+    newTodoId = model.add 'todos',
       completed: false
       text: text
+    listModel.insert i || 0, model.root.get "todos.#{newTodoId}"
 
   eventIndex = (e) ->
     item = $(e.target).parents('li')

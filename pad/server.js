@@ -66,16 +66,20 @@ app.get('/:roomId', function(req, res, next) {
   // that will cause it to render with the data from the initial load first
   res.setHeader('Cache-Control', 'no-store');
 
-  var roomPath = 'rooms.' + req.params.roomId;
-  model.subscribe(roomPath, function(err) {
-    if (err) return next(err);
-
-    model.ref('_page.room', roomPath);
+  $room = model.at('rooms.' + req.params.roomId)
+  // Subscribe is like a fetch but it also listens for updates
+  $room.subscribe(function (err) {
+    if (err) return next(err)
+    room = $room.get();
+    // If the room doesn't exist yet, we need to create it
+    if (!room) model.add('rooms', {content: '', id: req.params.roomId});
+    // Reference the current room's content for ease of use
+    model.ref('_page.room', $room.at('content'));
     model.bundle(function(err, bundle) {
       if (err) return next(err);
       var html = indexPage({
-        room: req.params.roomId
-      , text: model.get(roomPath)
+        room: $room.get('id')
+      , text: $room.get('content')
         // Escape bundle for use in an HTML attribute in single quotes, since
         // JSON will have lots of double quotes
       , bundle: JSON.stringify(bundle).replace(/'/g, '&#39;')

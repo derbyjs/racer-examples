@@ -11,7 +11,7 @@ templates = require './templates'
 
 redis.select 13
 store = racer.createStore
-  db: liveDbMongo('localhost:27017/racer-todos?auto_reconnect', safe: true)
+  db: liveDbMongo('mongodb://localhost:27017/racer-todos?auto_reconnect', safe: true)
   redis: redis
 
 app = express()
@@ -63,25 +63,25 @@ app.get '/:groupName', (req, res, next) ->
   res.setHeader 'Cache-Control', 'no-store'
 
   model = req.getModel()
-  group = model.at "groups.#{groupName}"
-  group.subscribe (err) ->
+  $group = model.at "groups.#{groupName}"
+  $todoIds = $group.at 'todoIds'
+  $group.subscribe (err) ->
     return next err if err
 
-    # Create some todos if this is a new group
-    todoIds = group.at 'todoIds'
-    unless todoIds.get()
+    # Create the group and some todos if this is a new group
+    unless $group.get()
+      model.add 'groups', {id: groupName}
       id0 = model.add 'todos', {completed: true, text: 'Done already'}
       id1 = model.add 'todos', {completed: false, text: 'Example todo'}
       id2 = model.add 'todos', {completed: false, text: 'Another example'}
-      todoIds.set [id1, id2, id0]
+      $todoIds.set [id1, id2, id0]
 
     # Queries may be specified in terms of a Mongo query or a model path that
     # contains an id or list of ids
-    model.query('todos', todoIds).subscribe (err) ->
+    model.query('todos', {}).subscribe (err) ->
       return next err if err
-
       # Create a two-way updated list with todos as items
-      list = model.refList '_page.list', 'todos', todoIds
+      list = model.refList '_page.list', 'todos', $todoIds
       # model.bundle waits for any pending model operations to complete and then
       # returns the JSON data for initialization on the client
       context = {list: list.get(), groupName}
