@@ -10,7 +10,7 @@ racer.use(require('racer-bundle'));
 
 //redis.select(14);
 var store = racer.createStore({
-  db: liveDbMongo('localhost:27017/racer-json?auto_reconnect', {safe: true})
+  db: liveDbMongo('mongodb://localhost:27017/racer-json?auto_reconnect', {safe: true})
 //, redis: redis
 });
 
@@ -66,17 +66,19 @@ app.get('/:roomId', function(req, res, next) {
   // that will cause it to render with the data from the initial load first
   res.setHeader('Cache-Control', 'no-store');
 
-  var roomPath = 'rooms.' + req.params.roomId;
-  model.subscribe(roomPath, function(err) {
+  var $room = model.at('rooms.' + req.params.roomId);
+  $room.subscribe($room , function(err) {
     if (err) return next(err);
-    model.setNull(roomPath, { x: 5, foo: "bar"})
 
-    model.ref('_page.room', roomPath);
+    var room = $room.get();
+    if (!room) model.add('rooms', { foo: 'bar', id: req.params.roomId});
+
+    model.ref('_page.room', $room);
     model.bundle(function(err, bundle) {
       if (err) return next(err);
       var html = indexPage({
-        room: req.params.roomId
-      , text: JSON.stringify(model.get(roomPath), null, 2)
+        room: $room.get('id')
+      , text: JSON.stringify($room.get('foo'))
         // Escape bundle for use in an HTML attribute in single quotes, since
         // JSON will have lots of double quotes
       , bundle: JSON.stringify(bundle).replace(/'/g, '&#39;')
