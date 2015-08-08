@@ -10,7 +10,7 @@ racer.use(require('racer-bundle'));
 
 redis.select(14);
 var store = racer.createStore({
-  db: liveDbMongo('localhost:27017/racer-pad?auto_reconnect', {safe: true})
+  db: liveDbMongo('mongodb://localhost:27017/racer-pad?auto_reconnect', {safe: true})
 , redis: redis
 });
 
@@ -66,11 +66,11 @@ app.get('/:roomId', function(req, res, next) {
   // that will cause it to render with the data from the initial load first
   res.setHeader('Cache-Control', 'no-store');
 
-  $room = model.at('rooms.' + req.params.roomId)
+  var $room = model.at('rooms.' + req.params.roomId);
   // Subscribe is like a fetch but it also listens for updates
   $room.subscribe(function (err) {
-    if (err) return next(err)
-    room = $room.get();
+    if (err) return next(err);
+    var room = $room.get();
     // If the room doesn't exist yet, we need to create it
     if (!room) model.add('rooms', {content: '', id: req.params.roomId});
     // Reference the current room's content for ease of use
