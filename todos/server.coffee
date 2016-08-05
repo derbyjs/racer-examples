@@ -57,33 +57,30 @@ app.get '/:groupName', (req, res, next) ->
   # that will cause it to render with the data from the initial load first
   res.setHeader 'Cache-Control', 'no-store'
 
-  model = req.getModel()
+  model = req.model
   $group = model.at "groups.#{groupName}"
-  $todoIds = $group.at 'todoIds'
   $group.subscribe (err) ->
     return next err if err
 
     # Create the group and some todos if this is a new group
     unless $group.get()
-      model.add 'groups', {id: groupName}
-      id0 = model.add 'todos', {completed: true, text: 'Done already'}
-      id1 = model.add 'todos', {completed: false, text: 'Example todo'}
-      id2 = model.add 'todos', {completed: false, text: 'Another example'}
-      $todoIds.set [id1, id2, id0]
+      id0 = model.add 'todos', {completed: true, text: 'Done already', group: groupName}
+      id1 = model.add 'todos', {completed: false, text: 'Example todo', group: groupName}
+      id2 = model.add 'todos', {completed: false, text: 'Another example', group: groupName}
+      $group.create {todoIds: [id1, id2, id0]}
 
-    # Queries may be specified in terms of a Mongo query or a model path that
-    # contains an id or list of ids
-    model.query('todos', {}).subscribe (err) ->
+    model.query('todos', {group: groupName}).subscribe (err) ->
       return next err if err
       # Create a two-way updated list with todos as items
-      list = model.refList '_page.list', 'todos', $todoIds
+      model.set '_page.groupName', groupName
+      model.refList '_page.list', 'todos', $group.at('todoIds')
+      html = templates.page model.get('_page')
       # model.bundle waits for any pending model operations to complete and then
       # returns the JSON data for initialization on the client
-      context = {list: list.get(), groupName}
       model.bundle (err, bundle) ->
         return next err if err
-        context.bundle = bundle
-        res.send templates.page(context)
+        html += templates.scripts bundle
+        res.send html
 
 port = process.env.PORT || 3000;
 http.createServer(app).listen port, ->

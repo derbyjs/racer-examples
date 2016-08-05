@@ -1,4 +1,4 @@
-var data = JSON.parse(document.scripts[0].getAttribute('data-bundle'));
+var data = JSON.parse(document.getElementById('data-bundle').innerHTML);
 var MODEL = require('racer').createModel(data);
 window.MODEL = MODEL
 
@@ -8,7 +8,7 @@ model = MODEL.at('_page.room');
 var pad = document.getElementById('pad');
 
 model.on('change', function(value, previous, passed) {
-  if (passed.local) return;
+  if (!passed.$remote) return;
   if (!passed.$type) {
     pad.value = value || '';
     return;
@@ -83,10 +83,10 @@ function applyChange(model, previous, value) {
 
   if (previous.length !== start + end) {
     var howMany = previous.length - start - end;
-    model.pass({local: true}).stringRemove(start, howMany);
+    model.stringRemove(start, howMany);
   }
   if (value.length !== start + end) {
     var inserted = value.slice(start, value.length - end);
-    model.pass({local: true}).stringInsert(start, inserted);
+    model.stringInsert(start, inserted);
   }
 }

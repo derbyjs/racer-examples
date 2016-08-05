@@ -47,10 +47,12 @@ app.get('/script.js', function(req, res, next) {
 });
 
 var indexTemplate = fs.readFileSync(__dirname + '/index.handlebars', 'utf-8');
-var indexPage = handlebars.compile(indexTemplate);
+var renderIndex = handlebars.compile(indexTemplate);
+var scriptsTemplate = fs.readFileSync(__dirname + '/scripts.handlebars', 'utf-8');
+var renderScripts = handlebars.compile(scriptsTemplate);
 
 app.get('/:roomId', function(req, res, next) {
-  var model = req.getModel();
+  var model = req.model;
   // Only handle URLs that use alphanumberic characters, underscores, and dashes
   if (!/^[a-zA-Z0-9_-]+$/.test(req.params.roomId)) return next();
   // Prevent the browser from storing the HTML response in its back cache, since
@@ -63,22 +65,31 @@ app.get('/:roomId', function(req, res, next) {
     if (err) return next(err);
     var room = $room.get();
     // If the room doesn't exist yet, we need to create it
-    if (!room) model.add('rooms', {content: '', id: req.params.roomId});
+    $room.createNull({content: ''});
     // Reference the current room's content for ease of use
     model.ref('_page.room', $room.at('content'));
+    var html = renderIndex({
+      room: $room.get('id'),
+      text: $room.get('content')
+    });
     model.bundle(function(err, bundle) {
       if (err) return next(err);
-      var html = indexPage({
-        room: $room.get('id')
-      , text: $room.get('content')
-        // Escape bundle for use in an HTML attribute in single quotes, since
-        // JSON will have lots of double quotes
-      , bundle: JSON.stringify(bundle).replace(/'/g, '&#39;')
-      });
+      var bundleJson = stringifyBundle(bundle);
+      html += renderScripts({bundle: bundleJson});
       res.send(html);
     });
   });
 });
+
+function stringifyBundle(bundle) {
+  return JSON.stringify(bundle)
+    // Replace the end tag sequence with an equivalent JSON string to make
+    // sure the script is not prematurely closed
+    .replace(/<\//g, '<\\/')
+    // Replace the start of an HTML comment tag sequence with an equivalent
+    // JSON string
+    .replace(/<!/g, '<\\u0021');
+}
 
 app.get('/', function(req, res) {
   res.redirect('/home');

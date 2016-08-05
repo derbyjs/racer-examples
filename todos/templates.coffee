@@ -1,8 +1,5 @@
 exports.page = ({groupName, list, bundle} = {}) ->
   listHtml = (exports.todo todo for todo in list || []).join('')
-  # Escape bundle for use in an HTML attribute in single quotes, since
-  # JSON will have lots of double quotes
-  bundle = JSON.stringify(bundle).replace /'/g, '&#39;'
   """
   <!DOCTYPE html>
   <meta charset="utf-8">
@@ -19,7 +16,19 @@ exports.page = ({groupName, list, bundle} = {}) ->
   <form id="content" autocomplete="off">
     <ul id="list">#{listHtml}</ul>
   </form>
-  <script async src="/script.js" data-bundle='#{bundle}'></script>
+  """
+
+exports.scripts = (bundle) ->
+  json = JSON.stringify(bundle)
+    # Replace the end tag sequence with an equivalent JSON string to make
+    # sure the script is not prematurely closed
+    .replace(/<\//g, '<\\/')
+    # Replace the start of an HTML comment tag sequence with an equivalent
+    # JSON string
+    .replace(/<!/g, '<\\u0021')
+  """
+  <script async src="/script.js"></script>
+  <script id="data-bundle" type="application/json">#{json}</script>
   """
 
 exports.todo = (todo) ->

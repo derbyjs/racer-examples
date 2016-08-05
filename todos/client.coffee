@@ -4,11 +4,15 @@ require './vendor/jquery-1.9.1.min'
 require './vendor/jquery-ui-1.10.3.custom.min.js'
 
 $ ->
-  data = JSON.parse document.scripts[0].getAttribute('data-bundle')
+  data = JSON.parse document.getElementById('data-bundle').innerHTML
   model = racer.createModel data
+
+  # FOR DEBUGGING ONLY
+  window.MODEL = model
 
   list = $('#list')
   listModel = model.at '_page.list'
+  groupName = model.get '_page.groupName'
 
   ## Update the DOM when the model changes ##
 
@@ -62,6 +66,7 @@ $ ->
     newTodoId = model.add 'todos',
       completed: false
       text: text
+      group: groupName
     listModel.insert i || 0, model.root.get "todos.#{newTodoId}"
 
   eventIndex = (e) ->
@@ -78,7 +83,8 @@ $ ->
     listModel.set eventIndex(e) + '.text', e.target.value
 
   list.on 'click', '.delete', (e) ->
-    listModel.remove eventIndex(e)
+    removed = listModel.remove eventIndex(e)
+    model.del "todos.#{removed[0].id}"
 
   from = null
   list.sortable
