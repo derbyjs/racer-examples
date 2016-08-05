@@ -2,25 +2,16 @@ var fs = require('fs');
 var http = require('http');
 var express = require('express');
 var handlebars = require('handlebars');
-var liveDbMongo = require('livedb-mongo');
-var redis = require('redis').createClient();
 var racerBrowserChannel = require('racer-browserchannel');
 var racer = require('racer');
 racer.use(require('racer-bundle'));
 
-redis.select(14);
-var store = racer.createStore({
-  db: liveDbMongo('mongodb://localhost:27017/racer-pad?auto_reconnect', {safe: true})
-, redis: redis
-});
+var backend = racer.createBackend();
 
 app = express();
 app
-  .use(express.favicon())
-  .use(express.compress())
-  .use(racerBrowserChannel(store))
-  .use(store.modelMiddleware())
-  .use(app.router)
+  .use(racerBrowserChannel(backend))
+  .use(backend.modelMiddleware());
 
 app.use(function(err, req, res, next) {
   console.error(err.stack || (new Error(err)).stack);
@@ -30,7 +21,7 @@ app.use(function(err, req, res, next) {
 function scriptBundle(cb) {
   // Use Browserify to generate a script file containing all of the client-side
   // scripts, Racer, and BrowserChannel
-  store.bundle(__dirname + '/client.js', function(err, js) {
+  backend.bundle(__dirname + '/client.js', function(err, js) {
     if (err) return cb(err);
     cb(null, js);
   });

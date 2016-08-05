@@ -2,39 +2,34 @@ fs = require 'fs'
 http = require 'http'
 coffeeify = require 'coffeeify'
 express = require 'express'
-liveDbMongo = require 'livedb-mongo'
-redis = require('redis').createClient()
 racerBrowserChannel = require 'racer-browserchannel'
+shareDbMongo = require 'sharedb-mongo'
 racer = require 'racer'
 racer.use require('racer-bundle')
 templates = require './templates'
 
-redis.select 13
-store = racer.createStore
-  db: liveDbMongo('mongodb://localhost:27017/racer-todos?auto_reconnect', safe: true)
-  redis: redis
+backend = racer.createBackend {
+  db: shareDbMongo('mongodb://localhost:27017/racer-todos')
+}
 
 app = express()
 app
-  .use(express.favicon())
-  .use(express.compress())
-  .use(express.static __dirname + '/public')
-  .use(racerBrowserChannel store)
-  .use(store.modelMiddleware())
-  .use(app.router)
+  .use(express.static('public'))
+  .use(racerBrowserChannel(backend))
+  .use(backend.modelMiddleware())
 
 app.use (err, req, res, next) ->
   console.error err.stack || (new Error err).stack
   res.send 500, 'Something broke!'
 
-store.on 'bundle', (browserify) ->
+backend.on 'bundle', (browserify) ->
   # Add support for directly requiring coffeescript in browserify bundles
   browserify.transform coffeeify
 
 scriptBundle = (cb) ->
   # Use Browserify to generate a script file containing all of the client-side
   # scripts, Racer, and BrowserChannel
-  store.bundle __dirname + '/client.coffee', {extensions: ['.coffee']}, (err, js) ->
+  backend.bundle __dirname + '/client.coffee', {extensions: ['.coffee']}, (err, js) ->
     return cb err if err
     cb null, js
 # Immediately cache the result of the bundling in production mode, which is

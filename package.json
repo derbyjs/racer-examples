@@ -7,14 +7,13 @@
     "url": "git://github.com/derbyjs/racer-examples.git"
   },
   "dependencies": {
-    "coffeeify": "~0.6.0",
-    "express": "~3.4.8",
-    "livedb-mongo": "~0.4.0",
-    "racer": "^0.6.0-alpha32",
-    "racer-browserchannel": "^0.3.0",
-    "racer-bundle": "~0.1.1",
-    "redis": "~0.10.1",
-    "handlebars": "^1.3.0"
+    "coffeeify": "^2.0.1",
+    "express": "^4.14.0",
+    "handlebars": "^4.0.5",
+    "racer": "^0.9.0",
+    "racer-browserchannel": "^0.5.0",
+    "racer-bundle": "^0.2.5",
+    "sharedb-mongo": "^1.0.0-beta"
   },
   "bugs": {
     "url": "https://github.com/derbyjs/racer-examples/issues"
